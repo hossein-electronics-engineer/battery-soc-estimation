@@ -1,152 +1,132 @@
-# Battery SOC Estimation using Equivalent Circuit Models
+# 🔋 Battery SOC Estimation using Equivalent Circuit Models and EKF
 
-## Overview
+## 📌 Overview
 
-This project presents a model-based approach for estimating the State of Charge (SOC) of a lithium-ion battery using a simple equivalent circuit model (1RC).
+This project presents a model-based approach for estimating the **State of Charge (SOC)** of a lithium-ion battery using:
 
-The implementation demonstrates how battery behavior can be approximated and analyzed using system modeling, simulation, and basic estimation techniques.
+* A simple **Equivalent Circuit Model (RC model)**
+* An **Extended Kalman Filter (EKF)** for state estimation
 
----
-
-## Objective
-
-* Simulate battery behavior under different load conditions
-* Estimate SOC using Coulomb counting
-* Analyze the relationship between OCV and terminal voltage
-* Demonstrate the effect of internal resistance and dynamic response
+The implementation demonstrates how battery behavior can be modeled and how SOC can be estimated in real time using system dynamics and measurement updates.
 
 ---
 
-## Methodology
+## 🎯 Objective
 
-### Battery Model
-
-A first-order equivalent circuit model (1RC) is used:
-
-* Ohmic resistance (R0)
-* RC network (R1, C1) for dynamic behavior
-
-### SOC Estimation
-
-SOC is calculated using Coulomb counting:
-
-SOC(t) = SOC(t-1) - (I * dt / Q)
-
-### Voltage Model
-
-Terminal voltage is computed as:
-
-V_terminal = OCV(SOC) - I * R0 - V_RC
-
-Where:
-
-* OCV is approximated as a function of SOC
-* V_RC models transient voltage behavior
+* Simulate battery voltage and current behavior
+* Estimate SOC using a physics-based model
+* Apply EKF to improve SOC estimation accuracy
+* Compare **true SOC vs estimated SOC**
 
 ---
 
-## Features
+## ⚙️ Methodology
 
-* Time-domain battery simulation
-* Custom current profile (charge/discharge)
-* SOC tracking
-* Voltage response analysis
-* Data export (CSV)
-* Automatic plot generation
+### 1. Battery Modeling
 
----
+* First-order RC equivalent circuit model
+* OCV-SOC nonlinear relationship
 
-## Project Structure
+### 2. Simulation
 
-```
-battery-soc-estimation/
-│
-├── src/
-│   └── main.py               # Simulation code
-│
-├── data/                     # (reserved for future use)
-│
-├── results/
-│   └── simulation_results.csv
-│
-├── figures/
-│   ├── current_profile.png
-│   ├── soc_profile.png
-│   └── voltage_response.png
-│
-└── README.md
-```
+* Time-based current profile (charge/discharge)
+* Voltage response generation
+
+### 3. State Estimation (EKF)
+
+* Predict step based on system model
+* Update step using voltage measurements
+* Nonlinear measurement handling
 
 ---
 
-## Example Results
+## 📊 Example Results
 
-### Current Profile
+### 🔹 Current Profile
 
 ![Current](figures/current_profile.png)
 
-### State of Charge
+### 🔹 SOC Comparison (True vs EKF)
 
-![SOC](figures/soc_profile.png)
+![SOC EKF](figures/soc_ekf_comparison.png)
 
-### Voltage Response
+### 🔹 Voltage Response
 
 ![Voltage](figures/voltage_response.png)
 
 ---
 
-## How to Run
+## 📁 Project Structure
 
-### Requirements
+```
+battery-soc-estimation/
+│
+├── src/
+│   ├── main.py          # Simulation and plotting
+│   └── ekf_soc.py      # EKF implementation
+│
+├── data/               # Input data (optional)
+├── results/            # Simulation outputs (CSV)
+├── figures/            # Generated plots
+│
+├── README.md
+└── requirements.txt
+```
 
-* Python 3.x
-* numpy
-* matplotlib
+---
 
-### Run
+## ▶️ How to Run
+
+### 1. Install dependencies
 
 ```bash
 pip install numpy matplotlib
+```
+
+### 2. Run the simulation
+
+```bash
 python src/main.py
 ```
 
 ---
 
-## Key Insights
+## 📈 Output
 
-* SOC decreases during discharge and increases during charging
-* Terminal voltage deviates from OCV due to internal resistance
-* RC network captures transient dynamics of battery response
-* Simple models can still provide meaningful engineering insight
+The simulation generates:
 
----
-
-## Limitations
-
-* OCV-SOC relationship is simplified
-* Temperature effects are not modeled
-* No aging or degradation included
-* Coulomb counting is sensitive to current measurement errors
+* SOC profile (true vs estimated)
+* Battery voltage response
+* Current profile
+* CSV file with all results
 
 ---
 
-## Future Work
+## 🚀 Features
 
-* Implement Kalman Filter (EKF) for improved SOC estimation
-* Add temperature dependency
-* Use real battery datasets
-* Extend to multi-cell battery systems
-* Optimize for embedded implementation
+* Physics-based battery modeling
+* Nonlinear OCV-SOC relationship
+* EKF-based SOC estimation
+* Visualization of estimation performance
 
 ---
 
-## Author
+## 🔧 Future Work
 
-Hossein (Electronics Engineer, PhD)
+* Tune EKF parameters (Q, R)
+* Add temperature effects
+* Improve battery model (2RC model)
+* Implement in embedded systems (C / MCU)
 
-Interested in:
+---
 
-* Battery Management Systems (BMS)
-* Control Systems
-* Embedded Systems
-* Energy Applications
+## 🧠 Key Takeaway
+
+This project shows how **model-based estimation + EKF** can be used to track battery SOC in a realistic and practical way.
+
+---
+
+## 👤 Author
+
+Hossein Electronics Engineer
+
