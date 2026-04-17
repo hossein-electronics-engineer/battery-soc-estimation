@@ -1,24 +1,25 @@
-# 🔋 Battery SOC Estimation using Equivalent Circuit Models and EKF
+# 🔋 Battery SOC Estimation using Equivalent Circuit Models, EKF, and Embedded Implementation
 
 ## 📌 Overview
 
 This project presents a model-based approach for estimating the **State of Charge (SOC)** of a lithium-ion battery using:
 
-* A simple **Equivalent Circuit Model (RC model)**
+* A **First-order Equivalent Circuit Model (RC model)**
 * An **Extended Kalman Filter (EKF)** for state estimation
-* A lightweight **embedded-oriented implementation** for real-time applications
+* A lightweight **embedded-oriented implementation**
+* A **C-based firmware-style implementation** for microcontroller deployment
 
-The implementation demonstrates how battery behavior can be modeled and how SOC can be estimated using both simulation and embedded-style execution.
+The project demonstrates the full workflow from simulation to embedded-ready algorithms.
 
 ---
 
 ## 🎯 Objective
 
-* Simulate battery voltage and current behavior
-* Estimate SOC using a physics-based model
-* Apply EKF for improved SOC estimation
-* Develop an embedded-friendly version of the estimator
+* Simulate battery behavior under dynamic load conditions
+* Estimate SOC using Coulomb counting and EKF
 * Compare **true SOC vs estimated SOC**
+* Develop a **real-time embedded-friendly estimator**
+* Translate the algorithm into **C for firmware use**
 
 ---
 
@@ -26,25 +27,31 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 
 ### 1. Battery Modeling
 
-* First-order RC equivalent circuit model
+* First-order RC equivalent circuit
 * Nonlinear OCV-SOC relationship
 
 ### 2. Simulation
 
-* Time-based current profile (charge/discharge)
-* Voltage response generation
+* Time-domain current profile
+* Voltage response computation
 
 ### 3. State Estimation (EKF)
 
-* Prediction step using system dynamics
-* Update step using voltage measurement
-* Nonlinear measurement handling
+* Prediction based on system model
+* Measurement update using voltage
+* Nonlinear handling via numerical derivative
 
 ### 4. Embedded-Oriented Implementation
 
-* Step-by-step SOC update (real-time style)
+* Step-by-step execution (real-time style)
 * Lightweight computation
-* Suitable for microcontroller execution
+* Suitable for MCU deployment
+
+### 5. C Implementation
+
+* Firmware-style EKF logic
+* Struct-based state handling
+* Ready for microcontroller integration
 
 ---
 
@@ -70,7 +77,7 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 
 ## 📁 Project Structure
 
-```
+```id="8d8ejp"
 battery-soc-estimation/
 │
 ├── src/
@@ -78,6 +85,11 @@ battery-soc-estimation/
 │   ├── ekf_soc.py
 │   ├── embedded_soc_step.py
 │   └── test_embedded_soc.py
+│
+├── c_version/
+│   ├── ekf_soc.h
+│   ├── ekf_soc.c
+│   └── main.c
 │
 ├── data/
 ├── results/
@@ -91,22 +103,40 @@ battery-soc-estimation/
 
 ## ▶️ How to Run
 
-### 1. Install dependencies
+### Python Version
 
-```
+Install dependencies:
+
+```bash id="t6c5wp"
 pip install numpy matplotlib
 ```
 
-### 2. Run main simulation
+Run main simulation:
 
-```
+```bash id="8y0h7g"
 python src/main.py
 ```
 
-### 3. Run embedded-style simulation
+Run embedded-style simulation:
 
-```
+```bash id="9r2bzj"
 python src/test_embedded_soc.py
+```
+
+---
+
+### C Version (Optional)
+
+Compile:
+
+```bash id="o6w3q9"
+gcc main.c ekf_soc.c -o ekf_test -lm
+```
+
+Run:
+
+```bash id="e8h0c2"
+./ekf_test
 ```
 
 ---
@@ -115,21 +145,21 @@ python src/test_embedded_soc.py
 
 The project generates:
 
-* SOC profile (true vs EKF)
+* SOC estimation (true vs EKF)
 * Embedded-style SOC estimation
-* Battery voltage response
+* Voltage response
 * Current profile
-* CSV file with simulation results
+* CSV results for analysis
 
 ---
 
 ## 🚀 Features
 
-* Physics-based battery modeling
-* Nonlinear OCV-SOC relationship
+* Physics-based battery model
 * EKF-based SOC estimation
-* Embedded-oriented implementation
-* Visualization of estimation performance
+* Embedded-oriented algorithm design
+* C firmware-style implementation
+* Visualization of estimation accuracy
 
 ---
 
@@ -137,15 +167,15 @@ The project generates:
 
 * Tune EKF parameters (Q, R)
 * Include temperature effects
-* Extend model to 2RC equivalent circuit
-* Convert algorithm to C for embedded systems
-* Deploy on microcontroller (STM32 / Arduino)
+* Extend to higher-order battery models (2RC)
+* Validate with real-world datasets
+* Deploy on STM32 / Arduino
 
 ---
 
 ## 🧠 Key Takeaway
 
-This project demonstrates how **model-based estimation combined with EKF** can be used to track battery SOC, and how the algorithm can be adapted for **embedded real-time applications**.
+This project demonstrates how **model-based estimation + EKF** can be transformed into an **embedded-ready algorithm**, bridging the gap between simulation and real-world implementation.
 
 ---
 
