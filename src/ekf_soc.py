@@ -1,48 +1,53 @@
 import numpy as np
 
+
 class SimpleEKF:
     def __init__(self, q_capacity, r0):
-        self.q = q_capacity  # battery capacity (Coulomb)
+        self.q = q_capacity
         self.r0 = r0
 
         # State: SOC
-        self.x = np.array([0.9])  # initial SOC
+        self.x = np.array([0.9], dtype=float)
 
         # Covariance
-        self.P = np.array([[1e-4]])
+        self.P = np.array([[1e-4]], dtype=float)
 
-        # Noise
-        self.Q = np.array([[1e-6]])  # process noise
-        self.R = np.array([[1e-3]])  # measurement noise
+        # Process and measurement noise
+        self.Q = np.array([[1e-6]], dtype=float)
+        self.R = np.array([[1e-3]], dtype=float)
 
     def predict(self, current, dt):
-        # State prediction (Coulomb counting)
-        self.x = self.x - (current * dt) / self.q
+        # SOC prediction from current integration
+        self.x[0] = self.x[0] - (current * dt) / self.q
+        self.x[0] = np.clip(self.x[0], 0.0, 1.0)
 
-        # Jacobian = 1 (linear approx)
-        F = np.array([[1]])
-
-        # Covariance prediction
+        F = np.array([[1.0]])
         self.P = F @ self.P @ F.T + self.Q
 
-    def update(self, voltage_measured, ocv_function):
-        # Predicted voltage
+    def update(self, voltage_measured, current, ocv_function):
         soc = self.x[0]
-        v_pred = ocv_function(np.array([soc]))[0] - self.r0 * 0
 
-        # Measurement Jacobian (approx derivative)
-        H = np.array([[1.0]])  # simplified
+        # Predicted terminal voltage
+        v_pred = ocv_function(np.array([soc]))[0] - current * self.r0
 
-        # Innovation
-        y = voltage_measured - v_pred
+        # Numerical derivative dOCV/dSOC
+        eps = 1e-5
+        soc_plus = np.clip(soc + eps, 0.0, 1.0)
+        soc_minus = np.clip(soc - eps, 0.0, 1.0)
+        d_ocv = (
+            ocv_function(np.array([soc_plus]))[0]
+            - ocv_function(np.array([soc_minus]))[0]
+        ) / (soc_plus - soc_minus + 1e-12)
 
+        H = np.array([[d_ocv]])
+
+        y = np.array([[voltage_measured - v_pred]])
         S = H @ self.P @ H.T + self.R
         K = self.P @ H.T @ np.linalg.inv(S)
 
-        # Update state
-        self.x = self.x + K @ y
+        self.x = self.x + (K @ y).flatten()
+        self.x[0] = np.clip(self.x[0], 0.0, 1.0)
 
-        # Update covariance
         I = np.eye(1)
         self.P = (I - K @ H) @ self.P
 
