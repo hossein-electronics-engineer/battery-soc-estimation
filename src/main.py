@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from ekf_soc import SimpleEKF
 
 
 def ocv_from_soc(soc: np.ndarray) -> np.ndarray:
@@ -32,10 +33,12 @@ def simulate_battery():
     os.makedirs("figures", exist_ok=True)
     os.makedirs("results", exist_ok=True)
 
+    # Simulation settings
     dt = 1.0
     t_end = 1200
     t = np.arange(0, t_end + dt, dt)
 
+    # Battery parameters
     q_ah = 2.3
     q_coulomb = q_ah * 3600.0
 
@@ -44,6 +47,7 @@ def simulate_battery():
     c1 = 2000.0
     tau1 = r1 * c1
 
+    # Initial conditions
     soc = np.zeros_like(t)
     v_rc = np.zeros_like(t)
     v_terminal = np.zeros_like(t)
@@ -54,26 +58,51 @@ def simulate_battery():
     ocv[0] = ocv_from_soc(np.array([soc[0]]))[0]
     v_terminal[0] = ocv[0] - current[0] * r0 - v_rc[0]
 
+    # Discrete-time simulation
     for k in range(1, len(t)):
+        # SOC update using coulomb counting
         soc[k] = soc[k - 1] - (current[k - 1] * dt) / q_coulomb
         soc[k] = np.clip(soc[k], 0.0, 1.0)
 
+        # RC voltage update
         alpha = np.exp(-dt / tau1)
         v_rc[k] = alpha * v_rc[k - 1] + r1 * (1 - alpha) * current[k - 1]
 
+        # OCV from SOC
         ocv[k] = ocv_from_soc(np.array([soc[k]]))[0]
+
+        # Terminal voltage
         v_terminal[k] = ocv[k] - current[k] * r0 - v_rc[k]
 
-    return t, current, soc, ocv, v_rc, v_terminal
+    return t, current, soc, ocv, v_rc, v_terminal, q_coulomb, r0
 
 
-def save_results(t, current, soc, ocv, v_rc, v_terminal):
-    data = np.column_stack((t, current, soc, ocv, v_rc, v_terminal))
-    header = "time_s,current_A,soc,ocv_V,v_rc_V,v_terminal_V"
+def estimate_soc_with_ekf(t, current, voltage_measured, q_coulomb, r0):
+    dt = t[1] - t[0]
+    ekf = SimpleEKF(q_capacity=q_coulomb, r0=r0)
+
+    soc_ekf = np.zeros_like(t)
+    soc_ekf[0] = ekf.get_soc()
+
+    for k in range(1, len(t)):
+        ekf.predict(current=current[k - 1], dt=dt)
+        ekf.update(
+            voltage_measured=voltage_measured[k],
+            current=current[k],
+            ocv_function=ocv_from_soc
+        )
+        soc_ekf[k] = ekf.get_soc()
+
+    return soc_ekf
+
+
+def save_results(t, current, soc, soc_ekf, ocv, v_rc, v_terminal):
+    data = np.column_stack((t, current, soc, soc_ekf, ocv, v_rc, v_terminal))
+    header = "time_s,current_A,soc_true,soc_ekf,ocv_V,v_rc_V,v_terminal_V"
     np.savetxt("results/simulation_results.csv", data, delimiter=",", header=header, comments="")
 
 
-def plot_results(t, current, soc, ocv, v_rc, v_terminal):
+def plot_results(t, current, soc, soc_ekf, ocv, v_terminal):
     plt.figure(figsize=(10, 4))
     plt.plot(t, current)
     plt.xlabel("Time [s]")
@@ -85,13 +114,15 @@ def plot_results(t, current, soc, ocv, v_rc, v_terminal):
     plt.close()
 
     plt.figure(figsize=(10, 4))
-    plt.plot(t, soc)
+    plt.plot(t, soc, label="True SOC")
+    plt.plot(t, soc_ekf, label="EKF Estimated SOC", linestyle="--")
     plt.xlabel("Time [s]")
     plt.ylabel("SOC [-]")
-    plt.title("State of Charge")
+    plt.title("SOC Comparison: True vs EKF")
+    plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("figures/soc_profile.png", dpi=200)
+    plt.savefig("figures/soc_ekf_comparison.png", dpi=200)
     plt.close()
 
     plt.figure(figsize=(10, 4))
@@ -108,9 +139,19 @@ def plot_results(t, current, soc, ocv, v_rc, v_terminal):
 
 
 def main():
-    t, current, soc, ocv, v_rc, v_terminal = simulate_battery()
-    save_results(t, current, soc, ocv, v_rc, v_terminal)
-    plot_results(t, current, soc, ocv, v_rc, v_terminal)
+    t, current, soc, ocv, v_rc, v_terminal, q_coulomb, r0 = simulate_battery()
+
+    soc_ekf = estimate_soc_with_ekf(
+        t=t,
+        current=current,
+        voltage_measured=v_terminal,
+        q_coulomb=q_coulomb,
+        r0=r0
+    )
+
+    save_results(t, current, soc, soc_ekf, ocv, v_rc, v_terminal)
+    plot_results(t, current, soc, soc_ekf, ocv, v_terminal)
+
     print("Simulation completed successfully.")
     print("Results saved in: results/")
     print("Figures saved in: figures/")
