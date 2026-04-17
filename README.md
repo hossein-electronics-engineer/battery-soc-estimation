@@ -4,22 +4,24 @@
 
 This project presents a model-based approach for estimating the **State of Charge (SOC)** of a lithium-ion battery using:
 
-* A **First-order Equivalent Circuit Model (RC model)**
-* An **Extended Kalman Filter (EKF)** for state estimation
+* A **first-order equivalent circuit model (1RC)**
+* An **Extended Kalman Filter (EKF)** for SOC estimation
 * A lightweight **embedded-oriented implementation**
-* A **C-based firmware-style implementation** for microcontroller deployment
+* A **C-based firmware-style implementation**
+* **Python vs C validation** of the estimator
 
-The project demonstrates the full workflow from simulation to embedded-ready algorithms.
+The project demonstrates a complete workflow from battery simulation to embedded-friendly implementation and cross-validation.
 
 ---
 
 ## 🎯 Objective
 
-* Simulate battery behavior under dynamic load conditions
+* Simulate battery voltage and current behavior under dynamic load conditions
 * Estimate SOC using Coulomb counting and EKF
-* Compare **true SOC vs estimated SOC**
-* Develop a **real-time embedded-friendly estimator**
-* Translate the algorithm into **C for firmware use**
+* Compare **true SOC** and **estimated SOC**
+* Develop a lightweight embedded-style estimator
+* Translate the estimator into C for firmware-oriented deployment
+* Validate the C implementation against the Python reference
 
 ---
 
@@ -27,31 +29,37 @@ The project demonstrates the full workflow from simulation to embedded-ready alg
 
 ### 1. Battery Modeling
 
-* First-order RC equivalent circuit
+* First-order RC equivalent circuit model
 * Nonlinear OCV-SOC relationship
 
-### 2. Simulation
+### 2. Python Simulation
 
 * Time-domain current profile
-* Voltage response computation
+* Terminal voltage response
+* SOC propagation using current integration
 
-### 3. State Estimation (EKF)
+### 3. EKF-Based SOC Estimation
 
-* Prediction based on system model
-* Measurement update using voltage
-* Nonlinear handling via numerical derivative
+* Prediction step using system dynamics
+* Measurement update using terminal voltage
+* Numerical approximation of the OCV derivative
 
 ### 4. Embedded-Oriented Implementation
 
-* Step-by-step execution (real-time style)
-* Lightweight computation
-* Suitable for MCU deployment
+* Step-based estimator update
+* Lightweight structure for real-time use
+* Reduced computational complexity
 
-### 5. C Implementation
+### 5. C Firmware-Style Implementation
 
-* Firmware-style EKF logic
-* Struct-based state handling
-* Ready for microcontroller integration
+* Struct-based estimator state
+* EKF logic implemented in C
+* Test execution on desktop compiler environment
+
+### 6. Validation
+
+* Python EKF output compared with C EKF output
+* Matching results confirm correct translation of the estimator logic
 
 ---
 
@@ -61,7 +69,7 @@ The project demonstrates the full workflow from simulation to embedded-ready alg
 
 ![Current](figures/current_profile.png)
 
-### 🔹 SOC Comparison (True vs EKF)
+### 🔹 SOC Comparison (True vs Python EKF)
 
 ![SOC EKF](figures/soc_ekf_comparison.png)
 
@@ -69,22 +77,27 @@ The project demonstrates the full workflow from simulation to embedded-ready alg
 
 ![Voltage](figures/voltage_response.png)
 
-### 🔹 Embedded SOC Comparison
+### 🔹 Embedded-Oriented SOC Comparison
 
 ![Embedded SOC](figures/soc_embedded_comparison.png)
+
+### 🔹 Python vs C Validation
+
+![Python vs C Validation](figures/python_c_validation.png)
 
 ---
 
 ## 📁 Project Structure
 
-```id="8d8ejp"
+```text
 battery-soc-estimation/
 │
 ├── src/
 │   ├── main.py
 │   ├── ekf_soc.py
 │   ├── embedded_soc_step.py
-│   └── test_embedded_soc.py
+│   ├── test_embedded_soc.py
+│   └── compare_results.py
 │
 ├── c_version/
 │   ├── ekf_soc.h
@@ -107,35 +120,41 @@ battery-soc-estimation/
 
 Install dependencies:
 
-```bash id="t6c5wp"
-pip install numpy matplotlib
+```bash
+pip install numpy matplotlib pandas
 ```
 
 Run main simulation:
 
-```bash id="8y0h7g"
+```bash
 python src/main.py
 ```
 
 Run embedded-style simulation:
 
-```bash id="9r2bzj"
+```bash
 python src/test_embedded_soc.py
+```
+
+Run Python vs C comparison:
+
+```bash
+python src/compare_results.py
 ```
 
 ---
 
-### C Version (Optional)
+### C Version
 
 Compile:
 
-```bash id="o6w3q9"
+```bash
 gcc main.c ekf_soc.c -o ekf_test -lm
 ```
 
 Run:
 
-```bash id="e8h0c2"
+```bash
 ./ekf_test
 ```
 
@@ -145,41 +164,54 @@ Run:
 
 The project generates:
 
-* SOC estimation (true vs EKF)
-* Embedded-style SOC estimation
-* Voltage response
-* Current profile
-* CSV results for analysis
+* Current profile plot
+* Voltage response plot
+* SOC comparison between true SOC and Python EKF
+* Embedded-style SOC comparison
+* Python vs C validation plot
+* CSV output files for analysis
+
+---
+
+## ✅ Validation Summary
+
+The final comparison shows that the **C implementation closely matches the Python EKF reference**, confirming that the SOC estimation logic was correctly translated into a firmware-style implementation.
+
+This makes the project suitable as a bridge between:
+
+* simulation and estimation research
+* embedded implementation
+* future deployment on microcontrollers
 
 ---
 
 ## 🚀 Features
 
-* Physics-based battery model
+* Physics-based battery modeling
 * EKF-based SOC estimation
 * Embedded-oriented algorithm design
 * C firmware-style implementation
-* Visualization of estimation accuracy
+* Python vs C validation workflow
 
 ---
 
 ## 🔧 Future Work
 
-* Tune EKF parameters (Q, R)
+* Tune EKF parameters (`Q`, `R`)
 * Include temperature effects
-* Extend to higher-order battery models (2RC)
-* Validate with real-world datasets
+* Improve the battery model (e.g. 2RC model)
+* Validate against real battery datasets
 * Deploy on STM32 / Arduino
+* Explore fixed-point implementation for embedded targets
 
 ---
 
 ## 🧠 Key Takeaway
 
-This project demonstrates how **model-based estimation + EKF** can be transformed into an **embedded-ready algorithm**, bridging the gap between simulation and real-world implementation.
+This project demonstrates how **model-based battery estimation** can be developed in Python, adapted for embedded-oriented execution, translated into C, and validated across implementations.
 
 ---
 
 ## 👤 Author
 
 Hossein Electronics Engineer
-
