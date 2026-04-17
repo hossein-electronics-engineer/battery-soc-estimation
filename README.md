@@ -6,8 +6,9 @@ This project presents a model-based approach for estimating the **State of Charg
 
 * A simple **Equivalent Circuit Model (RC model)**
 * An **Extended Kalman Filter (EKF)** for state estimation
+* A lightweight **embedded-oriented implementation** for real-time applications
 
-The implementation demonstrates how battery behavior can be modeled and how SOC can be estimated in real time using system dynamics and measurement updates.
+The implementation demonstrates how battery behavior can be modeled and how SOC can be estimated using both simulation and embedded-style execution.
 
 ---
 
@@ -15,7 +16,8 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 
 * Simulate battery voltage and current behavior
 * Estimate SOC using a physics-based model
-* Apply EKF to improve SOC estimation accuracy
+* Apply EKF for improved SOC estimation
+* Develop an embedded-friendly version of the estimator
 * Compare **true SOC vs estimated SOC**
 
 ---
@@ -25,7 +27,7 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 ### 1. Battery Modeling
 
 * First-order RC equivalent circuit model
-* OCV-SOC nonlinear relationship
+* Nonlinear OCV-SOC relationship
 
 ### 2. Simulation
 
@@ -34,9 +36,15 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 
 ### 3. State Estimation (EKF)
 
-* Predict step based on system model
-* Update step using voltage measurements
+* Prediction step using system dynamics
+* Update step using voltage measurement
 * Nonlinear measurement handling
+
+### 4. Embedded-Oriented Implementation
+
+* Step-by-step SOC update (real-time style)
+* Lightweight computation
+* Suitable for microcontroller execution
 
 ---
 
@@ -54,6 +62,10 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 
 ![Voltage](figures/voltage_response.png)
 
+### 🔹 Embedded SOC Comparison
+
+![Embedded SOC](figures/soc_embedded_comparison.png)
+
 ---
 
 ## 📁 Project Structure
@@ -62,12 +74,14 @@ The implementation demonstrates how battery behavior can be modeled and how SOC 
 battery-soc-estimation/
 │
 ├── src/
-│   ├── main.py          # Simulation and plotting
-│   └── ekf_soc.py      # EKF implementation
+│   ├── main.py
+│   ├── ekf_soc.py
+│   ├── embedded_soc_step.py
+│   └── test_embedded_soc.py
 │
-├── data/               # Input data (optional)
-├── results/            # Simulation outputs (CSV)
-├── figures/            # Generated plots
+├── data/
+├── results/
+├── figures/
 │
 ├── README.md
 └── requirements.txt
@@ -79,26 +93,33 @@ battery-soc-estimation/
 
 ### 1. Install dependencies
 
-```bash
+```
 pip install numpy matplotlib
 ```
 
-### 2. Run the simulation
+### 2. Run main simulation
 
-```bash
+```
 python src/main.py
+```
+
+### 3. Run embedded-style simulation
+
+```
+python src/test_embedded_soc.py
 ```
 
 ---
 
 ## 📈 Output
 
-The simulation generates:
+The project generates:
 
-* SOC profile (true vs estimated)
+* SOC profile (true vs EKF)
+* Embedded-style SOC estimation
 * Battery voltage response
 * Current profile
-* CSV file with all results
+* CSV file with simulation results
 
 ---
 
@@ -107,6 +128,7 @@ The simulation generates:
 * Physics-based battery modeling
 * Nonlinear OCV-SOC relationship
 * EKF-based SOC estimation
+* Embedded-oriented implementation
 * Visualization of estimation performance
 
 ---
@@ -114,15 +136,16 @@ The simulation generates:
 ## 🔧 Future Work
 
 * Tune EKF parameters (Q, R)
-* Add temperature effects
-* Improve battery model (2RC model)
-* Implement in embedded systems (C / MCU)
+* Include temperature effects
+* Extend model to 2RC equivalent circuit
+* Convert algorithm to C for embedded systems
+* Deploy on microcontroller (STM32 / Arduino)
 
 ---
 
 ## 🧠 Key Takeaway
 
-This project shows how **model-based estimation + EKF** can be used to track battery SOC in a realistic and practical way.
+This project demonstrates how **model-based estimation combined with EKF** can be used to track battery SOC, and how the algorithm can be adapted for **embedded real-time applications**.
 
 ---
 
