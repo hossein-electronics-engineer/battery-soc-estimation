@@ -5,21 +5,26 @@
 This project presents a model-based approach for estimating the **State of Charge (SOC)** of a lithium-ion battery using:
 
 * A **first-order equivalent circuit model (1RC)**
-* An **Extended Kalman Filter (EKF)** for SOC estimation
+* A **1-state Extended Kalman Filter (EKF)** for baseline SOC estimation
+* A **2-state EKF** with states:
+
+  * `SOC`
+  * `V_RC`
 * A lightweight **embedded-oriented implementation**
 * A **C-based firmware-style implementation**
 * **Python vs C validation** of the estimator
 
-The project demonstrates a complete workflow from battery simulation to embedded-friendly implementation and cross-validation.
+The project demonstrates a complete workflow from battery simulation to embedded-friendly implementation and estimator improvement.
 
 ---
 
 ## 🎯 Objective
 
 * Simulate battery voltage and current behavior under dynamic load conditions
-* Estimate SOC using Coulomb counting and EKF
+* Estimate SOC using model-based methods
 * Compare **true SOC** and **estimated SOC**
-* Develop a lightweight embedded-style estimator
+* Improve estimation accuracy by extending the EKF state model
+* Develop an embedded-oriented implementation
 * Translate the estimator into C for firmware-oriented deployment
 * Validate the C implementation against the Python reference
 
@@ -31,6 +36,11 @@ The project demonstrates a complete workflow from battery simulation to embedded
 
 * First-order RC equivalent circuit model
 * Nonlinear OCV-SOC relationship
+* Terminal voltage model:
+
+```text id="m4n7ah"
+V_terminal = OCV(SOC) - I*R0 - V_RC
+```
 
 ### 2. Python Simulation
 
@@ -38,25 +48,40 @@ The project demonstrates a complete workflow from battery simulation to embedded
 * Terminal voltage response
 * SOC propagation using current integration
 
-### 3. EKF-Based SOC Estimation
+### 3. 1-State EKF
 
-* Prediction step using system dynamics
-* Measurement update using terminal voltage
-* Numerical approximation of the OCV derivative
+The initial EKF formulation estimated only:
 
-### 4. Embedded-Oriented Implementation
+* `SOC`
+
+This provided a baseline estimator and enabled:
+
+* Q/R tuning
+* sensitivity analysis
+* embedded-oriented reformulation
+
+### 4. 2-State EKF
+
+The EKF was extended to estimate:
+
+* `SOC`
+* `V_RC`
+
+This reduced the mismatch between the estimator and the battery simulation model and significantly improved estimation accuracy.
+
+### 5. Embedded-Oriented Implementation
 
 * Step-based estimator update
 * Lightweight structure for real-time use
 * Reduced computational complexity
 
-### 5. C Firmware-Style Implementation
+### 6. C Firmware-Style Implementation
 
 * Struct-based estimator state
 * EKF logic implemented in C
-* Test execution on desktop compiler environment
+* Test execution in a desktop compiler environment
 
-### 6. Validation
+### 7. Validation
 
 * Python EKF output compared with C EKF output
 * Matching results confirm correct translation of the estimator logic
@@ -69,27 +94,49 @@ The project demonstrates a complete workflow from battery simulation to embedded
 
 ![Current](figures/current_profile.png)
 
-### 🔹 SOC Comparison (True vs Python EKF)
-
-![SOC EKF](figures/soc_ekf_comparison.png)
-
 ### 🔹 Voltage Response
 
 ![Voltage](figures/voltage_response.png)
-
-### 🔹 Embedded-Oriented SOC Comparison
-
-![Embedded SOC](figures/soc_embedded_comparison.png)
 
 ### 🔹 Python vs C Validation
 
 ![Python vs C Validation](figures/python_c_validation.png)
 
+### 🔹 2-State EKF SOC Comparison
+
+![2-State SOC](figures/soc_2state_ekf_comparison.png)
+
+### 🔹 2-State EKF V_RC Comparison
+
+![2-State VRC](figures/vrc_2state_ekf_comparison.png)
+
+### 🔹 2-State EKF SOC Error
+
+![2-State Error](figures/soc_2state_ekf_error.png)
+
+---
+
+## ✅ 2-State EKF Improvement
+
+To improve estimation accuracy, the EKF was extended from a 1-state formulation to a 2-state model:
+
+* `SOC`
+* `V_RC`
+
+This improved consistency between the estimator and the battery simulation model.
+
+### Performance
+
+* **MAE:** 0.000477
+* **RMSE:** 0.000597
+
+This result shows a clear improvement over the simpler 1-state EKF approach.
+
 ---
 
 ## 📁 Project Structure
 
-```text
+```text id="qtwud6"
 battery-soc-estimation/
 │
 ├── src/
@@ -120,25 +167,25 @@ battery-soc-estimation/
 
 Install dependencies:
 
-```bash
+```bash id="q1mot1"
 pip install numpy matplotlib pandas
 ```
 
-Run main simulation:
+Run the main simulation:
 
-```bash
+```bash id="imzm1s"
 python src/main.py
 ```
 
-Run embedded-style simulation:
+Run embedded-oriented simulation:
 
-```bash
+```bash id="6616g4"
 python src/test_embedded_soc.py
 ```
 
 Run Python vs C comparison:
 
-```bash
+```bash id="ba2omj"
 python src/compare_results.py
 ```
 
@@ -148,13 +195,13 @@ python src/compare_results.py
 
 Compile:
 
-```bash
+```bash id="v9k91y"
 gcc main.c ekf_soc.c -o ekf_test -lm
 ```
 
 Run:
 
-```bash
+```bash id="uusq63"
 ./ekf_test
 ```
 
@@ -166,41 +213,41 @@ The project generates:
 
 * Current profile plot
 * Voltage response plot
-* SOC comparison between true SOC and Python EKF
-* Embedded-style SOC comparison
+* Embedded-oriented SOC comparison
 * Python vs C validation plot
-* CSV output files for analysis
+* 2-state EKF SOC comparison
+* 2-state EKF V_RC comparison
+* 2-state EKF SOC error plot
+* CSV output files for further analysis
 
 ---
 
 ## ✅ Validation Summary
 
-The final comparison shows that the **C implementation closely matches the Python EKF reference**, confirming that the SOC estimation logic was correctly translated into a firmware-style implementation.
+The C implementation was validated against the Python reference implementation.
 
-This makes the project suitable as a bridge between:
-
-* simulation and estimation research
-* embedded implementation
-* future deployment on microcontrollers
+The final comparison showed that the **C implementation closely matches the Python EKF output**, confirming that the estimator logic was correctly translated into a firmware-style implementation.
 
 ---
 
 ## 🚀 Features
 
 * Physics-based battery modeling
-* EKF-based SOC estimation
+* 1-state EKF baseline estimator
+* Q/R tuning workflow
+* 2-state EKF with improved model fidelity
 * Embedded-oriented algorithm design
 * C firmware-style implementation
-* Python vs C validation workflow
+* Python vs C validation
 
 ---
 
 ## 🔧 Future Work
 
-* Tune EKF parameters (`Q`, `R`)
+* Port the **2-state EKF** to the C implementation
 * Include temperature effects
-* Improve the battery model (e.g. 2RC model)
-* Validate against real battery datasets
+* Improve the battery model further (e.g. 2RC model)
+* Validate with real battery datasets
 * Deploy on STM32 / Arduino
 * Explore fixed-point implementation for embedded targets
 
@@ -208,10 +255,11 @@ This makes the project suitable as a bridge between:
 
 ## 🧠 Key Takeaway
 
-This project demonstrates how **model-based battery estimation** can be developed in Python, adapted for embedded-oriented execution, translated into C, and validated across implementations.
+This project demonstrates how **model-based battery estimation** can be developed in Python, improved through EKF state augmentation, adapted for embedded-oriented execution, translated into C, and validated across implementations.
 
 ---
 
 ## 👤 Author
 
 Hossein Electronics Engineer
+
