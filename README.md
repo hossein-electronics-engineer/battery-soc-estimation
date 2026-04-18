@@ -38,7 +38,7 @@ The project demonstrates a complete workflow from battery simulation to embedded
 * Nonlinear OCV-SOC relationship
 * Terminal voltage model:
 
-```text id="m4n7ah"
+```text id="u6d0tn"
 V_terminal = OCV(SOC) - I*R0 - V_RC
 ```
 
@@ -60,7 +60,16 @@ This provided a baseline estimator and enabled:
 * sensitivity analysis
 * embedded-oriented reformulation
 
-### 4. 2-State EKF
+### 4. EKF Tuning
+
+Different `Q/R` combinations were evaluated to improve robustness under noisy voltage measurements.
+
+Best tuning result from the 1-state EKF stage:
+
+* **Q = 1e-6**
+* **R = 1e-2**
+
+### 5. 2-State EKF
 
 The EKF was extended to estimate:
 
@@ -69,19 +78,19 @@ The EKF was extended to estimate:
 
 This reduced the mismatch between the estimator and the battery simulation model and significantly improved estimation accuracy.
 
-### 5. Embedded-Oriented Implementation
+### 6. Embedded-Oriented Implementation
 
 * Step-based estimator update
 * Lightweight structure for real-time use
 * Reduced computational complexity
 
-### 6. C Firmware-Style Implementation
+### 7. C Firmware-Style Implementation
 
 * Struct-based estimator state
 * EKF logic implemented in C
-* Test execution in a desktop compiler environment
+* 2-state EKF replay using simulation-generated data
 
-### 7. Validation
+### 8. Validation
 
 * Python EKF output compared with C EKF output
 * Matching results confirm correct translation of the estimator logic
@@ -98,10 +107,6 @@ This reduced the mismatch between the estimator and the battery simulation model
 
 ![Voltage](figures/voltage_response.png)
 
-### 🔹 Python vs C Validation
-
-![Python vs C Validation](figures/python_c_validation.png)
-
 ### 🔹 2-State EKF SOC Comparison
 
 ![2-State SOC](figures/soc_2state_ekf_comparison.png)
@@ -113,6 +118,14 @@ This reduced the mismatch between the estimator and the battery simulation model
 ### 🔹 2-State EKF SOC Error
 
 ![2-State Error](figures/soc_2state_ekf_error.png)
+
+### 🔹 Python vs C Validation (SOC)
+
+![Python vs C SOC](figures/python_c_2state_soc_validation.png)
+
+### 🔹 Python vs C Validation (V_RC)
+
+![Python vs C VRC](figures/python_c_2state_vrc_validation.png)
 
 ---
 
@@ -134,9 +147,32 @@ This result shows a clear improvement over the simpler 1-state EKF approach.
 
 ---
 
+## ✅ Python vs C Validation for 2-State EKF
+
+The 2-state EKF was implemented both in Python and in firmware-style C.
+
+### SOC Error Validation
+
+![Python vs C SOC Error](figures/python_c_2state_soc_error.png)
+
+### V_RC Error Validation
+
+![Python vs C VRC Error](figures/python_c_2state_vrc_error.png)
+
+### Validation Metrics
+
+* **SOC MAE:** 0.00046861
+* **SOC RMSE:** 0.00058532
+* **V_RC MAE:** 0.00035691
+* **V_RC RMSE:** 0.00044748
+
+These results confirm that the C implementation closely matches the Python 2-state EKF reference.
+
+---
+
 ## 📁 Project Structure
 
-```text id="qtwud6"
+```text id="qzlcl2"
 battery-soc-estimation/
 │
 ├── src/
@@ -167,25 +203,25 @@ battery-soc-estimation/
 
 Install dependencies:
 
-```bash id="q1mot1"
+```bash id="srvx7y"
 pip install numpy matplotlib pandas
 ```
 
 Run the main simulation:
 
-```bash id="imzm1s"
+```bash id="twx3sq"
 python src/main.py
 ```
 
 Run embedded-oriented simulation:
 
-```bash id="6616g4"
+```bash id="6040a6"
 python src/test_embedded_soc.py
 ```
 
 Run Python vs C comparison:
 
-```bash id="ba2omj"
+```bash id="p62mni"
 python src/compare_results.py
 ```
 
@@ -195,13 +231,13 @@ python src/compare_results.py
 
 Compile:
 
-```bash id="v9k91y"
+```bash id="41irck"
 gcc main.c ekf_soc.c -o ekf_test -lm
 ```
 
 Run:
 
-```bash id="uusq63"
+```bash id="1vbh6t"
 ./ekf_test
 ```
 
@@ -213,20 +249,20 @@ The project generates:
 
 * Current profile plot
 * Voltage response plot
-* Embedded-oriented SOC comparison
-* Python vs C validation plot
+* Noisy voltage measurement plot
 * 2-state EKF SOC comparison
 * 2-state EKF V_RC comparison
 * 2-state EKF SOC error plot
+* Python vs C validation plots
 * CSV output files for further analysis
 
 ---
 
 ## ✅ Validation Summary
 
-The C implementation was validated against the Python reference implementation.
+The C implementation was validated against the Python 2-state EKF reference implementation.
 
-The final comparison showed that the **C implementation closely matches the Python EKF output**, confirming that the estimator logic was correctly translated into a firmware-style implementation.
+The final comparison showed that the **C implementation closely matches the Python output**, confirming that the estimator logic was correctly translated into a firmware-style implementation.
 
 ---
 
@@ -244,7 +280,7 @@ The final comparison showed that the **C implementation closely matches the Pyth
 
 ## 🔧 Future Work
 
-* Port the **2-state EKF** to the C implementation
+* Port the 2-state EKF to MCU-specific real-time deployment
 * Include temperature effects
 * Improve the battery model further (e.g. 2RC model)
 * Validate with real battery datasets
@@ -262,4 +298,3 @@ This project demonstrates how **model-based battery estimation** can be develope
 ## 👤 Author
 
 Hossein Electronics Engineer
-
